@@ -1,40 +1,5 @@
-name: build_haydn_hos_1drv
-on:
-  workflow_dispatch:
-    inputs:
-      STOCK_URL:
-        description: "待操作的底包/xiaomi.eu底包下载地址"
-        required: true
-        default: 'https://cdn-ota.azureedge.net/V14.0.8.0.TKKCNXM/miui_HAYDN_V14.0.8.0.TKKCNXM_e3deaf183b_13.0.zip'
-      PORT_URL:
-        description: "待操作的移植包下载地址"
-        required: true
+
         
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: 最大化构建环境
-        uses: easimon/maximize-build-space@master
-        with:
-          swap-size-mb: 8192
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-      - name: 检出仓库文件
-        uses: actions/checkout@main
-      - name: 1.准备环境
-        run: |
-          sudo apt install aria2 python3 busybox zip tar apktool unzip p7zip-full openjdk-8-jre zipalign zstd bc android-sdk-libsparse-utils
-          sudo apt --fix-broken install
-          sudo apt update --fix-missing
-          pip3 install --upgrade pip
-          pip3 install pycryptodome requests setuptools docopt
-          curl https://rclone.org/install.sh | sudo bash
-          mkdir -p ~/.config/rclone/
-          unzip -P ${{ secrets.PASSWORD }} "$GITHUB_WORKSPACE"/tools/rclone.zip -d ~/.config/rclone/
-          curl -X POST -H "Content-Type: application/json" -d '{"msg_type": "post", "content": {"post": {"zh_cn": {"title": "HyperOS云端移植进度更新通知", "content": [[{"tag": "text", "text": "任务GITHUB WORKFLOWS编号为:${{ github.run_id }}         "}, {"tag": "text", "text": "环境配置完成!开始下载镜像并移植!"}]]}}}}' ${{ secrets.FEISHU }}
-      - name: 2.克隆仓库
         run: |
           git clone --depth 1 https://github.com/tosasitill/HyperOS_Action_builder hyperos_port
           aria2c -s 10 -x 10 -o devices.zip -d ./hyperos_port "${{ secrets.LINK }}"
